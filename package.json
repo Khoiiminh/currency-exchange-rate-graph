@@ -1,0 +1,30 @@
+{
+  "name": "currency-exchange-rate-graph-web-app",
+  "version": "1.0.0",
+  "description": "Track and visualize currency exchange rate changes between countries in real time.",
+  "keywords": [
+    "graph",
+    "web",
+    "application",
+    "currency",
+    "exchange",
+    "event-driven"
+  ],
+  "license": "MIT",
+  "author": "khoiminhnguyenhoang1804@gmail.com",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./app/server.js",
+    "test": "nodemon --inspect ./app/server.js"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.57.2",
+    "axios": "^1.13.6",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "nodemon": "^3.1.14",
+    "ws": "^8.20.0"
+  }
+}
