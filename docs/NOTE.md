@@ -1,28 +1,29 @@
-1. <span style="display:flex; text-align:center; justify-content:center">Currency Exchange Rate Graph Web App</span>
+<span style="display:flex; text-align:center; justify-content:center">Currency Exchange Rate Graph Web App</span>
 ==========================
 
-- [1. Concept](#1-concept)
-- [2. Event Type](#2-event-type)
-- [3. Tech stack (free \& self-contained)](#3-tech-stack-free--self-contained)
-- [4. Extras / fun ideas](#4-extras--fun-ideas)
-- [5. APIs](#5-apis)
-- [6. System Architecture](#6-system-architecture)
-- [7. Caching Strategy](#7-caching-strategy)
-  - [7.1. Overview](#71-overview)
-  - [7.2. Cache Initialization and Hydration](#72-cache-initialization-and-hydration)
-  - [7.3. Polling and Real-Time Updates](#73-polling-and-real-time-updates)
-  - [7.4. Event-Driven Data Distribution](#74-event-driven-data-distribution)
-  - [7.5. Summary of Cache Benefits](#75-summary-of-cache-benefits)
-- [8. System Entities](#8-system-entities)
+- [Currency Exchange Rate Graph Web App](#currency-exchange-rate-graph-web-app)
+- [2. Concept](#2-concept)
+- [3. Event Type](#3-event-type)
+- [4. Tech stack (free \& self-contained)](#4-tech-stack-free--self-contained)
+- [5. Extras / fun ideas](#5-extras--fun-ideas)
+- [6. APIs](#6-apis)
+- [7. System Architecture](#7-system-architecture)
+- [8. Caching Strategy](#8-caching-strategy)
+  - [8.1. Overview](#81-overview)
+  - [8.2. Cache Initialization and Hydration](#82-cache-initialization-and-hydration)
+  - [8.3. Polling and Real-Time Updates](#83-polling-and-real-time-updates)
+  - [8.4. Event-Driven Data Distribution](#84-event-driven-data-distribution)
+  - [8.5. Summary of Cache Benefits](#85-summary-of-cache-benefits)
+- [9. System Entities](#9-system-entities)
 
 
-# 1. Concept
+# 2. Concept
 
 **Goal:** Track and visualize currency exchange rate changes between countries in real time.
 
 **Event-driven flavor:** Each rate update is an event, and the system reacts by updating the graph or triggering analytics (like spikes, alerts, or trends).
 
-# 2. Event Type
+# 3. Event Type
 
 Read-heavy event-driven: You mostly react to incoming updates.
 * Events examples:
@@ -30,7 +31,7 @@ Read-heavy event-driven: You mostly react to incoming updates.
   * Rate of JPY→GBP updated
   * Rate crosses a threshold (optional: generate “alert” event)
 
-# 3. Tech stack (free & self-contained)
+# 4. Tech stack (free & self-contained)
 
 1. Frontend: React Next.JS + Recharts/D3.js for graphs
 2. Backend: Node.js/Express
@@ -40,7 +41,7 @@ Read-heavy event-driven: You mostly react to incoming updates.
    * WebSocket or Server-Sent Events (SSE) for pushing updates to clients
    * Each API fetch creates an event in your system
 
-# 4. Extras / fun ideas
+# 5. Extras / fun ideas
 * Highlight volatility with color-coded graph edges
 * Show historical spikes or correlations between currencies
 * Let users subscribe to “rate thresholds” (like Slack notifications, but local web alerts)
@@ -55,7 +56,7 @@ Explicitely:
   * Offline mode / demo mode:
     *   Load static JSON to test without hitting APIs.
 
-# 5. APIs
+# 6. APIs
 
 **ExchangeRate-API**
 All Supported Currencies
@@ -116,7 +117,7 @@ Where "error-type" can be any of the following:
 "quota-reached" when your account has reached the the number of requests allowed by your plan.
 ```
 
-# 6. System Architecture
+# 7. System Architecture
 
 ```mermaid
 flowchart TD
@@ -188,20 +189,20 @@ flowchart TD
 linkStyle default stroke:#4CAF50,stroke-width:2px,stroke-dasharray:5;
 ```
 
-# 7. Caching Strategy
+# 8. Caching Strategy
 
-## 7.1. Overview 
+## 8.1. Overview 
 
 The system implements a hybrid caching strategy designed to balance real-time user updates with persistent storage for historical data. The main goal is to provide users with **up-to-date exchange rate information** while maintaining a **lightweight, high-performance in-memory cache** for rapid access to recent data points. The cache is complemented by a durable MySQL database for long-term storage and historical reference.
 <hr />
 
-## 7.2. Cache Initialization and Hydration
+## 8.2. Cache Initialization and Hydration
 Upon the system startup, the Exchange Service queries the database to retrieve the **last 30 historical exchange rate points** for each currency pair. These points are loaded into the **in-memory Exchange Store**, which acts as the cache. Once the cache is hydrated, an **INITIAL_DATA_READY** event is emitted via the **Event Bus** to notify the WebSocket layer that the initial snapshot is available.
 
 This ensures that any user connecting immediately after system startup can receive a **preload graph of the last 30 points**, providing context and continuity without waiting for the next API polling cycle.
 <hr />
 
-## 7.3. Polling and Real-Time Updates
+## 8.3. Polling and Real-Time Updates
 
 The Exchange Service continuously polls the ExchangeRate API for the latest exchange rate data. When a new rate is fetched, it is first **compared against the most recent cached value** to determine if an update is necessary. If a change is detected:
 1. The **in-memory cache** is updated using an **append-and-shift strategy**:
@@ -213,7 +214,7 @@ The Exchange Service continuously polls the ExchangeRate API for the latest exch
 This workflow guarantees that the cache remains a **rolling window of the most recent 30 points**, while the database accumulates a complete historical log.
 <hr />
 
-## 7.4. Event-Driven Data Distribution
+## 8.4. Event-Driven Data Distribution
 
 The system leverages an **Event Bus** to propagate changes to multiple subscribers efficiently:
 - **WebSocket Server:** Receives both **INITIAL_DATA_READY** and **RATE_UPDATED** events to push the latest snapshot and updates to connected clients.
@@ -223,7 +224,7 @@ The system leverages an **Event Bus** to propagate changes to multiple subscribe
 By using the cache as the primary source for user-facing data, the system avoids frequent database reads, ensuring low-latency responses even under high load.
 <hr />
 
-## 7.5. Summary of Cache Benefits
+## 8.5. Summary of Cache Benefits
 
 1. **Immediate User Feedback:** New clients receive a fully hydrated snapshot of the last 30 points on connection.
 2. **Efficient Real-Time Updates:** Only incremental changes are appended to the cache and pushed to subscribers.
@@ -231,7 +232,7 @@ By using the cache as the primary source for user-facing data, the system avoids
 4. **Event-Driven Architecture:** Decouples data production from consumption, allowing threshold evaluation, subscription filtering, and client updates to scale independently
 <hr >
 
-# 8. System Entities
+# 9. System Entities
 
 The Currency Exchange Rate Graph Web Application is designed as an event-driven, read-heavy system in which each component operates as a distinct entity with a clearly defined responsibility. Rather than functioning as a traditional request-response pipeline, the system is structured around the continuous production, transformation, and distribution of events. This architectural approach allows the system to maintain real-time responsiveness while preserving historical integrity and scalability.
 
